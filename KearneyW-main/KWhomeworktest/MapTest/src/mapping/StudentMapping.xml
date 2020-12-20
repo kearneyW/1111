@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.IStudentDAO">
+	<select id="query" resultMap="studentMap">
+	select * from t_student
+	</select>
+	<resultMap type="vo.Student" id="studentMap">
+	<result column="id" property="id"/>
+	<result column="studentName" property="studentName"/>
+	<result column="emp_id" property="empId"/>
+	<result column="student_address" property="address"/>
+	</resultMap>
+</mapper>

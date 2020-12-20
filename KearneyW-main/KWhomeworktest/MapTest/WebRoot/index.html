@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+		<meta charset="utf-8" />
+		<title>myMap</title>
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&&type=webgl&ak=pAHZZ44CiyeULjjq8hV9fMCVFhOwD3DO"></script>
+		<script src="js/jquery-1.10.2.js" type="text/javascript" charset="utf-8"></script>
+	<style type="text/css">
+		html{height: 100%;}
+		body{height: 100%;margin: 0px;padding: 0px;}
+		#container{height: 100%;}
+	</style>
+	</head>
+	<body>
+		
+		<div id="container"></div>
+		<script type="text/javascript">
+			$(function(){
+				
+			});
+			
+			var map = new BMapGL.Map("container");
+			 
+			
+			var point1;
+			
+			map.enableScrollWheelZoom(true);
+			
+			map.addEventListener('tilesloaded', function () {
+			
+			    $.ajax({
+					type:"post",
+					url:"studentController.do",
+					dataType:"json",
+					success:function(response){
+						if(response.code == 1){
+							
+							
+							for(var i = 0;i<response.info.length;i++){
+								
+								
+									getPoint(response.info[i]);
+							}
+						}else{
+							alert("获取学生数据失败！");
+						}
+					}
+				});
+			});
+			
+			var myGeo = new BMapGL.Geocoder();
+			
+			 myGeo.getPoint('武汉纺织大学',function(tmp){
+				if (tmp) {
+					
+					map.centerAndZoom(tmp,5);
+				 var myIcon = new BMapGL.Icon("img/school.png",new BMapGL.Size(50,50));
+				 var markerIcon = new BMapGL.Marker(tmp,{icon:myIcon});
+				 markerIcon.setTitle('武汉纺织大学');
+					
+					map.addOverlay(markerIcon);
+					point1 = tmp;
+				} else{
+					alert('地址解析失败！');
+				}
+			},'武汉');
+			
+			
+			function getPoint(info){
+			
+				 myGeo.getPoint(info.address, function(point){
+					if (point) {
+						var tmp = new BMapGL.Point(point.lng, point.lat);
+								addMarker(tmp,info);
+							}
+						},info.address);
+			}
+			var myIcon = new BMapGL.Icon("img/aerospace.png", new BMapGL.Size(32, 70), {    
+		
+		imageOffset: new BMapGL.Size(0, 0)   
+	  });
+			function addMarker(point,info){
+				var markerIcon = new BMapGL.Marker(point,{icon:new BMapGL.Icon("img/circle.png",new BMapGL.Size(20,20))});
+				var geoc = BMapGL.Geocoder();
+				markerIcon.setTitle("姓名："+info.studentName+"\n学号："+info.empId+"\n地址："+info.address);
+				map.addOverlay(markerIcon);
+				var polyLine = new BMapGL.Polyline([point,point1],{
+					strokeColor:"blue",
+					strokeWeight:3, 
+					 strokeOpacity:0.5
+					 });
+				map.addOverlay(polyLine);
+				
+			}
+			
+			window.run = function (point1,point2){
+		var driving = new BMapGL.DrivingRoute(map);    
+		driving.search(point1, point2);
+		driving.setSearchCompleteCallback(function(){
+			var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    
+			var paths = pts.length;    
+
+			var carMk = new BMapGL.Marker(pts[0],{icon:myIcon});
+			map.addOverlay(carMk);
+			i=0;
+			function resetMkPoint(i){
+				carMk.setPosition(pts[i]);
+				if(i < paths){
+				time = setTimeout(function(){
+						i+=100;
+						resetMkPoint(i);
+					},100);
+				}
+			}
+			setTimeout(function(){
+				resetMkPoint(0);
+			},100)
+
+		});
+	}
+		</script>
+	</body>
+</html>
